@@ -49,7 +49,7 @@ python -m vertx loclahost:1234
 ```
 
 
-### test
+### Test
 
 ``` 
 pytest tests --log-level=DEBUG
