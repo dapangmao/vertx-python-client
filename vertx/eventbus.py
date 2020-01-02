@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Payload:
 
-    def __init__(self, type="ping", address=None, replyAddress=None, header=None, body=None):
+    def __init__(self, type, address=None, replyAddress=None, header=None, body=None):
         # type: (str, Optional[str], Optional[str], Optional[dict], Optional[dict]) -> None
         self.data = {"type": type}
         if address:
@@ -45,15 +45,16 @@ class Payload:
 
 class EventBus:
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, ping_interval_by_seconds=20):
         # type: (str, int) -> None
         self.host = host
         self.port = port
+        self.ping_interval_by_seconds = ping_interval_by_seconds
         self.loop = asyncio.get_event_loop()
         self.daemon = threading.Thread(target=self.loop.run_forever, name="event-bus-async")
         self.stop_sign = self.loop.create_future()  # type: asyncio.Future[None]  # add a stop sign to control the loop
         self.inputs = asyncio.Queue(loop=self.loop)
-        self.listen_funcs = {}
+        self.listen_funcs = {}  # type: dict[str, Callable]
 
     async def _connect_then_listen(self):
         reader, writer = await asyncio.open_connection(self.host, self.port)
@@ -87,12 +88,11 @@ class EventBus:
             await writer.close()
             self.disconnect()
 
-    async def ping(self, ping_interval_by_seconds=20):
-        # type: (int) -> None
+    async def ping(self):
         """ Use a ping operation to keep long polling """
         while True:
-            self.send(Payload())
-            await asyncio.sleep(ping_interval_by_seconds)
+            self.send(Payload(type="ping"))
+            await asyncio.sleep(self.ping_interval_by_seconds)
 
     def send(self, payload):
         # type: (Payload) -> None
