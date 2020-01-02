@@ -24,23 +24,25 @@ pip install git+https://github.com/dapangmao/vertx-python-client
 ```python
 
 from vertx import EventBus, Payload
-import time
 
 eb = EventBus(host='localhost', port=1011)
 eb.connect()
 eb.add_listen_func(address="discovery.versions", action=lambda x: print(x))
+
 # Send the JSON binary
 reg = Payload(type="register", address="api.versions")
 eb.send(reg)
 pub = Payload(type="publish", address="api.versions.get", replyAddress="api.versions")
 eb.send(pub)
+
+# Quit the connection
 eb.disconnect()
 ```
 
 Instead use the command line interface
 
 ```
-python -m vertx loclahost:1234
+python -m vertx localhost:1234
 > {"type": "register", "address": "discovery.versions"}
 
 > exit
