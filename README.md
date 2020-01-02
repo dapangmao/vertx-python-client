@@ -1,7 +1,7 @@
 vertx-python-client
 ---
 
-An asynchronous TCP eventbus Python client other than the thread-based [official client](https://github.com/vert-x3/vertx-eventbus-bridge-clients/tree/master/python/Vertx)
+An asynchronous TCP eventbus Python client other than the thread-based [official client](https://github.com/vert-x3/vertx-eventbus-bridge-clients/tree/master/python)
 
 
 ### Feature
@@ -46,4 +46,11 @@ python -m vertx loclahost:1234
 
 > exit
 
+```
+
+
+### test
+
+``` 
+pytest tests --log-level=DEBUG
 ```

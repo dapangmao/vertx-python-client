@@ -26,8 +26,13 @@ class Payload:
     def __repr__(self):
         return json.dumps(self.data)
 
-    def serialize(self):
-        msg = self.__repr__().encode()
+    def to_binary(self):
+        return self.serialize(self.__repr__())
+
+    @staticmethod
+    def serialize(text):
+        # type: (str) -> bytes
+        msg = text.encode()
         return struct.pack("!i%ss" % len(msg), len(msg), msg)
 
     @staticmethod
@@ -66,13 +71,13 @@ class EventBus:
 
                 if outgoing in done:
                     msg = outgoing.result()
-                    writer.write(msg.serialize())
-                    LOGGER.debug(f"SEND: {msg}")
+                    writer.write(msg.to_binary())
+                    LOGGER.debug(f"Client SEND: {msg}")
                     await writer.drain()
 
                 if incoming in done:
                     msg = incoming.result()
-                    LOGGER.debug(f"RECV: {msg}")
+                    LOGGER.debug(f"Client RECV: {msg}")
                     obj = Payload.deserialize(msg)
                     self.listen(obj)
 
