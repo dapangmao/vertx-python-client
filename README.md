@@ -27,7 +27,7 @@ from vertx import EventBus, Payload
 
 eb = EventBus(host='localhost', port=1011)
 eb.connect()
-eb.add_listen_func(address="discovery.versions", action=lambda x: print(x))
+eb.add_listen_func(address="api.versions", action=lambda x: print(x))
 
 # Send the JSON binary
 reg = Payload(type="register", address="api.versions")
