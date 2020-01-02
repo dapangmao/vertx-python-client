@@ -4,7 +4,7 @@ import json
 import struct
 import logging
 
-from typing import Optional
+from typing import Optional, Callable
 
 LOGGER = logging.getLogger(__name__)
 
@@ -67,8 +67,8 @@ class EventBus:
                 if outgoing in done:
                     msg = outgoing.result()
                     writer.write(msg.serialize())
-                    await writer.drain()
                     LOGGER.debug(f"SEND: {msg}")
+                    await writer.drain()
 
                 if incoming in done:
                     byte = incoming.result()
@@ -92,8 +92,10 @@ class EventBus:
     def send(self, payload):
         # type: (Delivery) -> None
         address = payload.data.get("address")
-        if address and payload.data.get('type') == "register":
-            self.listen_funcs[address] = lambda x: LOGGER.info(f'Address: {address}; Body: {x}')
+        if address and payload.data.get('type') == "register" and address not in self.listen_funcs:
+            self.listen_funcs[address] = lambda x: LOGGER.info(f'{address} heard: {x}')
+        elif address and payload.data.get('type') == "unregister" and address in self.listen_funcs:
+            del self.listen_funcs[address]
         self.loop.call_soon_threadsafe(self.inputs.put_nowait, payload)
 
     def connect(self):
@@ -106,20 +108,22 @@ class EventBus:
         self.loop.stop()  # stop the event loop
         self.daemon.join()  # stop the thread
 
-    def listen(self, obj):
+    def listen(self, dictionary):
         # type: (dict) -> None
-        if 'address' not in obj or 'body' not in obj:
+        if 'address' not in dictionary or 'body' not in dictionary:
             return
-        address, body = obj["address"], obj["body"]
+        address, body = dictionary["address"], dictionary["body"]
         func = self.listen_funcs.get(address)
         if func:
             func(body)
 
     def add_listen_func(self, address, func):
+        # type: (str, Callable) -> None
         self.listen_funcs[address] = func
 
     def delete_listen_func(self, address):
+        # type: (str) -> None
         try:
             del self.listen_funcs[address]
         except KeyError:
-            LOGGER.error("There is the address listening function")
+            LOGGER.error(f"There is no listening function for {address}")
