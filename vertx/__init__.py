@@ -1,3 +1,3 @@
-from vertx.eventbus import EventBus, Delivery
+from vertx.eventbus import EventBus, Payload
 
-__all__ = ["EventBus", "Delivery"]
+__all__ = ["EventBus", "Payload"]

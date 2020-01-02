@@ -2,7 +2,7 @@ import logging
 import sys
 import time
 import json
-from vertx.eventbus import EventBus, Delivery
+from vertx.eventbus import EventBus, Payload
 
 LOGGER = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ class Client:
         self.eb = EventBus(host, port)
 
     def parse(self, text):
-        current = Delivery()
+        current = Payload()
         try:
             current.data = json.loads(text)
         except json.decoder.JSONDecodeError:

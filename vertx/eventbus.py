@@ -9,7 +9,7 @@ from typing import Optional, Callable
 LOGGER = logging.getLogger(__name__)
 
 
-class Delivery:
+class Payload:
 
     def __init__(self, type="ping", address=None, replyAddress=None, header=None, body=None):
         # type: (str, Optional[str], Optional[str], Optional[dict], Optional[dict]) -> None
@@ -71,9 +71,9 @@ class EventBus:
                     await writer.drain()
 
                 if incoming in done:
-                    byte = incoming.result()
-                    LOGGER.debug(byte)
-                    obj = Delivery.deserialize(byte)
+                    msg = incoming.result()
+                    LOGGER.debug(f"RECV: {msg}")
+                    obj = Payload.deserialize(msg)
                     self.listen(obj)
 
                 if self.stop_sign in done:
@@ -86,11 +86,11 @@ class EventBus:
         # type: (int) -> None
         """ Use a ping operation to keep long polling """
         while True:
-            self.send(Delivery())
+            self.send(Payload())
             await asyncio.sleep(ping_interval_by_seconds)
 
     def send(self, payload):
-        # type: (Delivery) -> None
+        # type: (Payload) -> None
         address = payload.data.get("address")
         if address and payload.data.get('type') == "register" and address not in self.listen_funcs:
             self.listen_funcs[address] = lambda x: LOGGER.info(f'{address} heard: {x}')

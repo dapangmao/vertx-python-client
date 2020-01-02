@@ -1,7 +1,7 @@
 vertx-python-client
 ---
 
-An asynchronous TCP eventbus Python client
+An asynchronous TCP eventbus Python client other than the thread-based [official client](https://github.com/vert-x3/vertx-eventbus-bridge-clients/tree/master/python/Vertx)
 
 
 ### Feature
@@ -23,22 +23,22 @@ pip install git+https://github.com/dapangmao/vertx-python-client
 
 ```python
 
-from vertx import EventBus, Delivery
-
+from vertx import EventBus, Payload
 import time
+
 eb = EventBus(host='localhost', port=1011)
 eb.connect()
 eb.add_listen_func("discovery.versions", lambda x: print(x))
-
-reg = Delivery(type="register", address="api.versions")
+# Send the JSON binary
+reg = Payload(type="register", address="api.versions")
 eb.send(reg)
-pub = Delivery(type="publish", address="api.versions.get", replyAddress="api.versions")
+pub = Payload(type="publish", address="api.versions.get", replyAddress="api.versions")
 eb.send(pub)
 time.sleep(3)
 eb.disconnect()
 ```
 
-Input a JSON at the command line interface
+Instead use the command line interface
 
 ```
 python -m vertx loclahost:1234

@@ -6,15 +6,15 @@ with open(os.path.join(pwd, 'README.md')) as f:
     readme = f.read()
 
 with open(os.path.join(pwd, 'LICENSE')) as f:
-    gs_license = f.read()
+    license = f.read()
 
 setup(
     name='vertx-python-client',
     py_modules=['vertx'],
-    version='0.1',
+    version='0.2',
     description='An asynchronous TCP eventbus Python client',
     long_description=readme,
-    author='hchao8@gmail.com',
+    author='dapangmao',
     author_email='hchao8@gmail.com',
     url='https://github.com/dapangmao/vertx-python-client',
     install_requires=[
@@ -22,7 +22,7 @@ setup(
     tests_require=[
         'pytest>=5.0.1',
     ],
-    license=gs_license,
+    license=license,
     zip_safe=False,
     packages=find_packages(exclude=['tests', 'docs', 'script', 'build', 'dist'])
 )
