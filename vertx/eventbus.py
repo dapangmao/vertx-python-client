@@ -122,9 +122,9 @@ class EventBus:
         if func:
             func(body)
 
-    def add_listen_func(self, address, func):
+    def add_listen_func(self, address, action):
         # type: (str, Callable) -> None
-        self.listen_funcs[address] = func
+        self.listen_funcs[address] = action
 
     def delete_listen_func(self, address):
         # type: (str) -> None
