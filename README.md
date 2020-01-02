@@ -34,7 +34,6 @@ reg = Payload(type="register", address="api.versions")
 eb.send(reg)
 pub = Payload(type="publish", address="api.versions.get", replyAddress="api.versions")
 eb.send(pub)
-time.sleep(3)
 eb.disconnect()
 ```
 
