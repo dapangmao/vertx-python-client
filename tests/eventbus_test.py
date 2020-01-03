@@ -3,16 +3,14 @@ import json
 import time
 import asyncio
 
+import pytest
+
 from vertx import EventBus, Payload
 
 API_VERSION = 1.1
 PORT = 8765
 HOST = '127.0.0.1'
-
-
-def assert_messsage_from_client(body):
-    logging.debug("Will assert the API version")
-    assert body == {"apiVersions": API_VERSION}, "The message from the server is not expected"
+LOGGER = logging.getLogger(__name__)
 
 
 class MockServer:
@@ -31,7 +29,7 @@ class MockServer:
                 data = await reader.read(10000)
                 if not data:
                     break
-                logging.debug(f"Server RECV: {data}")
+                LOGGER.debug(f"Server RECV: {data}")
                 message = Payload.deserialize(data)
 
                 if message.get('type') == 'publish' and message.get('replyAddress') == 'api.versions':
@@ -42,21 +40,36 @@ class MockServer:
                     writer.write(binary_response)
         finally:
             await writer.drain()
-            logging.debug("Close the client socket")
+            LOGGER.debug("Close the client socket")
             writer.close()
 
 
-def test_client_functionality():
-    logging.debug("Will set up both the server and the client")
+@pytest.fixture
+def setup_server():
+    LOGGER.debug("Set up the server")
     server = MockServer()
     server.run()
 
-    client = EventBus(host=HOST, port=PORT)
-    client.add_listen_func("api.versions", lambda x: assert_messsage_from_client(x))
-    client.connect()
 
+@pytest.fixture
+def setup_client():
+    LOGGER.debug("Set up the client")
+    client = EventBus(host=HOST, port=PORT)
+    received_message_from_client = dict(data=None)
+
+    def handle(text):
+        received_message_from_client['body'] = text
+
+    client.add_listen_func("api.versions", handle)
+    return client, received_message_from_client
+
+
+def test_client_functionality(setup_server, setup_client):
+    client, received_message_from_client = setup_client
+    client.connect()
     pub = Payload(type="publish", address="api.versions.get", replyAddress="api.versions")
     client.send(pub)
     time.sleep(1)
-    logging.debug("Will tear down the server and the client")
+    assert received_message_from_client['body'] == {"apiVersions": API_VERSION}
+    LOGGER.debug("Will tear down the server and the client")
     client.disconnect()

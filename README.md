@@ -14,7 +14,7 @@ An asynchronous TCP eventbus Python client other than the thread-based [official
 
 
 ```
-pip install git+https://github.com/dapangmao/vertx-python-client
+pip install vertx-python-client
 ```
 
 ### Usage 
@@ -53,5 +53,5 @@ python -m vertx localhost:1234
 ### Test
 
 ``` 
-pytest tests --log-level=DEBUG
+pytest --log-cli-level=DEBUG tests
 ```

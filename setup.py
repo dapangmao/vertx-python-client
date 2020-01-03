@@ -23,6 +23,10 @@ setup(
         'pytest>=5.0.1',
     ],
     license=license,
-    zip_safe=False,
+    classifiers=[
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3",
+    ],
+    python_requires='>=3.6',
     packages=find_packages(exclude=['tests', 'docs', 'script', 'build', 'dist'])
 )
