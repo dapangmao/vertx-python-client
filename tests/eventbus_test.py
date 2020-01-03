@@ -57,6 +57,6 @@ def test_client_functionality():
 
     pub = Payload(type="publish", address="api.versions.get", replyAddress="api.versions")
     client.send(pub)
-    time.sleep(2)
+    time.sleep(1)
     logging.debug("Will tear down the server and the client")
     client.disconnect()

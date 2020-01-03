@@ -3,6 +3,7 @@ import threading
 import json
 import struct
 import logging
+import sys
 
 from typing import Optional, Callable
 
@@ -11,8 +12,8 @@ LOGGER = logging.getLogger(__name__)
 
 class Payload:
 
-    def __init__(self, type, address=None, replyAddress=None, header=None, body=None):
-        # type: (str, Optional[str], Optional[str], Optional[dict], Optional[dict]) -> None
+    def __init__(self, type=None, address=None, replyAddress=None, header=None, body=None):
+        # type: (Optional[str], Optional[str], Optional[str], Optional[dict], Optional[dict]) -> None
         self.data = {"type": type}
         if address:
             self.data["address"] = address
@@ -60,7 +61,7 @@ class EventBus:
         reader, writer = await asyncio.open_connection(self.host, self.port)
         try:
             while True:
-                incoming = asyncio.ensure_future(reader.read(100000))
+                incoming = asyncio.ensure_future(reader.read(sys.maxsize))  # look for EOL since the default parameter -1 does not work # noqa
                 outgoing = asyncio.ensure_future(self.inputs.get())
                 done, pending = await asyncio.wait([incoming, outgoing, self.stop_sign],
                                                    return_when=asyncio.FIRST_COMPLETED)  # type: set[asyncio.Future], set[asyncio.Future]  # noqa
