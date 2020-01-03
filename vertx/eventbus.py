@@ -40,14 +40,20 @@ class Payload:
     def deserialize(byte_array):
         # type: (bytes) -> dict
         length = int.from_bytes(byte_array[:4], 'big')
-        text = byte_array[4: 4 + length].decode()
+        try:
+            _text = byte_array[4: 4+length]
+        except IndexError:
+            LOGGER.error(f"The incoming data has incorrect length")
+            return {}
+        else:
+            text = _text.decode()
         return json.loads(text)
 
 
 class EventBus:
 
     def __init__(self, host, port, ping_interval_by_seconds=20):
-        # type: (str, int) -> None
+        # type: (str, int, int) -> None
         self.host = host
         self.port = port
         self.ping_interval_by_seconds = ping_interval_by_seconds
@@ -65,7 +71,7 @@ class EventBus:
                 outgoing = asyncio.ensure_future(self.inputs.get())
                 done, pending = await asyncio.wait([incoming, outgoing, self.stop_sign],
                                                    return_when=asyncio.FIRST_COMPLETED)  # type: set[asyncio.Future], set[asyncio.Future]  # noqa
-                # Cancel pending tasks to avoid leaking them.
+                # Cancel pending tasks to avoid leaking them
                 if incoming in pending:
                     incoming.cancel()
                 if outgoing in pending:
@@ -76,13 +82,11 @@ class EventBus:
                     writer.write(msg.to_binary())
                     LOGGER.debug(f"Client SEND: {msg}")
                     await writer.drain()
-
                 if incoming in done:
                     msg = incoming.result()
                     LOGGER.debug(f"Client RECV: {msg}")
                     obj = Payload.deserialize(msg)
                     self.listen(obj)
-
                 if self.stop_sign in done:
                     break
         finally:
@@ -99,7 +103,7 @@ class EventBus:
         # type: (Payload) -> None
         address = payload.data.get("address")
         if address and payload.data.get('type') == "register" and address not in self.listen_funcs:
-            self.listen_funcs[address] = lambda x: LOGGER.info(f'{address} heard: {x}')
+            self.listen_funcs[address] = lambda x: LOGGER.info(f'ADDRESS {address} RECV: {x}')
         elif address and payload.data.get('type') == "unregister" and address in self.listen_funcs:
             del self.listen_funcs[address]
         self.loop.call_soon_threadsafe(self.inputs.put_nowait, payload)

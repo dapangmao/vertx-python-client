@@ -19,9 +19,10 @@ pip install vertx-python-client
 
 ### Usage 
 
-
+Use as a standard Python library
 
 ```python
+
 
 from vertx import EventBus, Payload
 
@@ -39,7 +40,7 @@ eb.send(pub)
 eb.disconnect()
 ```
 
-Instead use the command line interface
+Instead use from the command line interface
 
 ```
 python -m vertx localhost:1234

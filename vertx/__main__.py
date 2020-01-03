@@ -1,7 +1,8 @@
-import logging
 import sys
 import time
 import json
+import logging
+
 from vertx.eventbus import EventBus, Payload
 
 LOGGER = logging.getLogger(__name__)
@@ -10,9 +11,11 @@ LOGGER = logging.getLogger(__name__)
 class Client:
 
     def __init__(self, host, port):
+        # type: (str, int) -> None
         self.eb = EventBus(host, port)
 
     def parse(self, text):
+        # type: (str) -> None
         current = Payload()
         try:
             current.data = json.loads(text)
