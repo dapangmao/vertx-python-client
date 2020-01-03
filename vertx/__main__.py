@@ -33,7 +33,7 @@ def main():
         args = sys.argv[1].split(':')
         host, port = args[0], int(args[1])
     except (IndexError, ValueError):
-        raise ValueError("Please input a argument such as localhost:1234")
+        raise ValueError("Please input an argument such as localhost:1234")
     cli = Client(host=host, port=port)
     cli.eb.connect()
 
