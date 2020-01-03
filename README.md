@@ -43,8 +43,8 @@ Instead use the command line interface
 
 ```
 python -m vertx localhost:1234
-> {"type": "register", "address": "discovery.versions"}
-
+> {"type": "register", "address": "api.versions"}
+> {"type": "publish", "address": "api.versions.get", "replyAddress": "api.versions"}
 > exit
 
 ```
