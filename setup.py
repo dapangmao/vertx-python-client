@@ -5,14 +5,12 @@ pwd = os.path.dirname(__file__)
 with open(os.path.join(pwd, 'README.md')) as f:
     readme = f.read()
 
-with open(os.path.join(pwd, 'LICENSE')) as f:
-    license = f.read()
-
 setup(
     name='vertx-python-client',
     py_modules=['vertx'],
     version='0.3.1',
     description='An asynchronous TCP eventbus Python client',
+    long_description_content_type='text/markdown',
     long_description=readme,
     author='dapangmao',
     author_email='hchao8@gmail.com',
@@ -22,7 +20,7 @@ setup(
     tests_require=[
         'pytest>=5.0.1',
     ],
-    license=license,
+    license="MIT",
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
