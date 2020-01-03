@@ -11,7 +11,7 @@ with open(os.path.join(pwd, 'LICENSE')) as f:
 setup(
     name='vertx-python-client',
     py_modules=['vertx'],
-    version='0.3',
+    version='0.3.1',
     description='An asynchronous TCP eventbus Python client',
     long_description=readme,
     author='dapangmao',

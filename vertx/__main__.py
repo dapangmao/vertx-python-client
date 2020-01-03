@@ -52,6 +52,5 @@ def main():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)s - %(pathname)s - %(levelname)s: %(message)s', datefmt='%x %I:%M:%S',
-                        level=logging.INFO)
+    logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%x %I:%M:%S', level=logging.INFO)
     main()
