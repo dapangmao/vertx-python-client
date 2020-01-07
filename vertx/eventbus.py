@@ -10,6 +10,10 @@ from typing import Optional, Callable
 LOGGER = logging.getLogger(__name__)
 
 
+class DecodeException(Exception):
+    pass
+
+
 class Payload:
 
     def __init__(self, type="ping", address=None, replyAddress=None, header=None, body=None):
@@ -41,13 +45,15 @@ class Payload:
         # type: (bytes) -> dict
         length = int.from_bytes(byte_array[:4], 'big')
         try:
-            _text = byte_array[4: 4+length]
+            _text = byte_array[4: 4 + length]
         except IndexError:
             LOGGER.error(f"The incoming data has incorrect length")
             return {}
-        else:
-            text = _text.decode()
-        return json.loads(text)
+        text = _text.decode()
+        try:
+            return json.loads(text)
+        except json.decoder.JSONDecodeError:
+            raise DecodeException(f"Cannot decode the original bytes: {byte_array}")
 
 
 class EventBus:
@@ -67,7 +73,8 @@ class EventBus:
         reader, writer = await asyncio.open_connection(self.host, self.port)
         try:
             while True:
-                incoming = asyncio.ensure_future(reader.read(sys.maxsize))  # look for EOL since the default parameter -1 does not work # noqa
+                incoming = asyncio.ensure_future(
+                    reader.read(sys.maxsize))  # look for EOL since the default parameter -1 does not work # noqa
                 outgoing = asyncio.ensure_future(self.inputs.get())
                 done, pending = await asyncio.wait([incoming, outgoing, self.stop_sign],
                                                    return_when=asyncio.FIRST_COMPLETED)  # type: set[asyncio.Future], set[asyncio.Future]  # noqa
