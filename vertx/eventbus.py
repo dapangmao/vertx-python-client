@@ -10,10 +10,6 @@ from typing import Optional, Callable
 LOGGER = logging.getLogger(__name__)
 
 
-class DecodeException(Exception):
-    pass
-
-
 class Payload:
 
     def __init__(self, type="ping", address=None, replyAddress=None, header=None, body=None):
@@ -43,17 +39,14 @@ class Payload:
     @staticmethod
     def deserialize(byte_array):
         # type: (bytes) -> dict
-        length = int.from_bytes(byte_array[:4], 'big')
         try:
+            length = int.from_bytes(byte_array[:4], 'big')
             _text = byte_array[4: 4 + length]
-        except IndexError:
-            LOGGER.error(f"The incoming data has incorrect length")
-            return {}
-        text = _text.decode()
-        try:
+            text = _text.decode()
             return json.loads(text)
-        except json.decoder.JSONDecodeError:
-            raise DecodeException(f"Cannot decode the original bytes: {byte_array}")
+        except (IndexError, json.decoder.JSONDecodeError):
+            LOGGER.error(f"Cannot decode the original bytes: {byte_array}")
+            return {}
 
 
 class EventBus:
@@ -76,8 +69,7 @@ class EventBus:
                 incoming = asyncio.ensure_future(
                     reader.read(sys.maxsize))  # look for EOL since the default parameter -1 does not work # noqa
                 outgoing = asyncio.ensure_future(self.inputs.get())
-                done, pending = await asyncio.wait([incoming, outgoing, self.stop_sign],
-                                                   return_when=asyncio.FIRST_COMPLETED)  # type: set[asyncio.Future], set[asyncio.Future]  # noqa
+                done, pending = await asyncio.wait([incoming, outgoing, self.stop_sign], return_when=asyncio.FIRST_COMPLETED)  # type: set[asyncio.Future], set[asyncio.Future]  # noqa
                 # Cancel pending tasks to avoid leaking them
                 if incoming in pending:
                     incoming.cancel()
@@ -110,7 +102,7 @@ class EventBus:
         # type: (Payload) -> None
         address = payload.data.get("address")
         if address and payload.data.get('type') == "register" and address not in self.listen_funcs:
-            self.listen_funcs[address] = lambda x: LOGGER.info(f'ADDRESS {address} RECV: {x}')
+            self.listen_funcs[address] = lambda x: LOGGER.info(f'ADDR: {address} - RECV: {x}')
         elif address and payload.data.get('type') == "unregister" and address in self.listen_funcs:
             del self.listen_funcs[address]
         self.loop.call_soon_threadsafe(self.inputs.put_nowait, payload)
@@ -138,7 +130,7 @@ class EventBus:
         # type: (str, Callable) -> None
         self.listen_funcs[address] = action
 
-    def delete_listen_func(self, address):
+    def del_listen_func(self, address):
         # type: (str) -> None
         try:
             del self.listen_funcs[address]
