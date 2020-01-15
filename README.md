@@ -26,7 +26,7 @@ Use as a standard Python library
 
 from vertx import EventBus, Payload
 
-eb = EventBus(host='localhost', port=1011)
+eb = EventBus(host='localhost', port=1234)
 eb.connect()
 eb.add_listen_func(address="api.versions", action=lambda x: print(x))
 

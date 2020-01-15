@@ -4,7 +4,6 @@ import json
 import struct
 import logging
 import sys
-
 from typing import Optional, Callable
 
 LOGGER = logging.getLogger(__name__)
@@ -57,17 +56,16 @@ class EventBus:
         self.port = port
         self.ping_interval_by_seconds = ping_interval_by_seconds
         self.loop = asyncio.get_event_loop()
-        self.daemon = threading.Thread(target=self.loop.run_forever, name="event-bus-async")
+        self.daemon = None  # type: Optional[threading.Thread]
         self.stop_sign = self.loop.create_future()  # type: asyncio.Future[None]  # add a stop sign to control the loop
         self.inputs = asyncio.Queue(loop=self.loop)
-        self.listen_funcs = {}  # type: dict[str, Callable]
+        self.on_funcs = {}  # type: dict[str, Callable]
 
-    async def _connect_then_listen(self):
+    async def _listen(self):
         reader, writer = await asyncio.open_connection(self.host, self.port)
         try:
             while True:
-                incoming = asyncio.ensure_future(
-                    reader.read(sys.maxsize))  # look for EOL since the default parameter -1 does not work # noqa
+                incoming = asyncio.ensure_future(reader.read(sys.maxsize-1))  # asyncio has a bug that does not honor the default parameter -1 # noqa
                 outgoing = asyncio.ensure_future(self.inputs.get())
                 done, pending = await asyncio.wait([incoming, outgoing, self.stop_sign], return_when=asyncio.FIRST_COMPLETED)  # type: set[asyncio.Future], set[asyncio.Future]  # noqa
                 # Cancel pending tasks to avoid leaking them
@@ -75,7 +73,6 @@ class EventBus:
                     incoming.cancel()
                 if outgoing in pending:
                     outgoing.cancel()
-
                 if outgoing in done:
                     msg = outgoing.result()
                     writer.write(msg.to_binary())
@@ -99,40 +96,43 @@ class EventBus:
             await asyncio.sleep(self.ping_interval_by_seconds)
 
     def send(self, payload):
-        # type: (Payload) -> None
+        # type: (EventBusPayload) -> None
         address = payload.data.get("address")
-        if address and payload.data.get('type') == "register" and address not in self.listen_funcs:
-            self.listen_funcs[address] = lambda x: LOGGER.info(f'ADDR: {address} - RECV: {x}')
-        elif address and payload.data.get('type') == "unregister" and address in self.listen_funcs:
-            del self.listen_funcs[address]
+        if address and payload.data.get('type') == "register" and address not in self.on_funcs:
+            self.on_funcs[address] = lambda x: LOGGER.info(f'ADDR: {address} - RECV: {x}')
+        elif address and payload.data.get('type') == "unregister" and address in self.on_funcs:
+            del self.on_funcs[address]
         self.loop.call_soon_threadsafe(self.inputs.put_nowait, payload)
 
-    def connect(self):
-        self.loop.create_task(self._connect_then_listen())
+    def connect(self, use_daemon=True):
+        self.loop.create_task(self._listen())
         self.loop.create_task(self.ping())
-        self.daemon.start()
+        if use_daemon:
+            self.daemon = threading.Thread(target=self.loop.run_forever, name="eventbus-asynchronous")
+            self.daemon.start()
 
     def disconnect(self):
         self.loop.call_soon_threadsafe(self.stop_sign.set_result, None)  # break the event loop
         self.loop.stop()  # stop the event loop
-        self.daemon.join()  # stop the thread
+        if self.daemon and self.daemon.is_alive():
+            self.daemon.join()  # stop the thread
 
     def listen(self, dictionary):
         # type: (dict) -> None
         if 'address' not in dictionary or 'body' not in dictionary:
             return
         address, body = dictionary["address"], dictionary["body"]
-        func = self.listen_funcs.get(address)
+        func = self.on_funcs.get(address)
         if func:
             func(body)
 
     def add_listen_func(self, address, action):
         # type: (str, Callable) -> None
-        self.listen_funcs[address] = action
+        self.on_funcs[address] = action
 
     def del_listen_func(self, address):
         # type: (str) -> None
         try:
-            del self.listen_funcs[address]
+            del self.on_funcs[address]
         except KeyError:
             LOGGER.error(f"There is no listening function for {address}")
