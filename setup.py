@@ -8,7 +8,7 @@ with open(os.path.join(pwd, 'README.md')) as f:
 setup(
     name='vertx-python-client',
     py_modules=['vertx'],
-    version='0.3.4',
+    version='0.4.0',
     description='An asynchronous TCP eventbus Python client',
     long_description_content_type='text/markdown',
     long_description=readme,

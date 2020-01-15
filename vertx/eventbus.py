@@ -13,15 +13,7 @@ class Payload:
 
     def __init__(self, type="ping", address=None, replyAddress=None, header=None, body=None):
         # type: (str, Optional[str], Optional[str], Optional[dict], Optional[dict]) -> None
-        self.data = {"type": type}
-        if address:
-            self.data["address"] = address
-        if replyAddress:
-            self.data["replyAddress"] = replyAddress
-        if header:
-            self.data["header"] = header
-        if body:
-            self.data["body"] = body
+        self.data = dict(type=type, address=address, replyAddress=replyAddress, header=header, body=body)
 
     def __repr__(self):
         return json.dumps(self.data)
