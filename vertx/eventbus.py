@@ -4,7 +4,7 @@ import json
 import struct
 import logging
 import sys
-from typing import Optional, Callable
+from typing import Optional, Callable, Dict
 
 LOGGER = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class EventBus:
         self.daemon = None  # type: Optional[threading.Thread]
         self.stop_sign = self.loop.create_future()  # type: asyncio.Future[None]  # add a stop sign to control the loop
         self.inputs = asyncio.Queue(loop=self.loop)
-        self.on_funcs = {}  # type: dict[str, Callable]
+        self.on_funcs = {}  # type: Dict[str, Callable]
 
     async def _listen(self):
         reader, writer = await asyncio.open_connection(self.host, self.port)
@@ -81,7 +81,7 @@ class EventBus:
             await writer.close()
             self.disconnect()
 
-    async def ping(self):
+    async def _ping(self):
         """ Use a ping operation to keep long polling """
         while True:
             self.send(Payload())
@@ -98,7 +98,7 @@ class EventBus:
 
     def connect(self, use_daemon=True):
         self.loop.create_task(self._listen())
-        self.loop.create_task(self.ping())
+        self.loop.create_task(self._ping())
         if use_daemon:
             self.daemon = threading.Thread(target=self.loop.run_forever, name="eventbus-asynchronous")
             self.daemon.start()
@@ -124,7 +124,7 @@ class EventBus:
 
     def del_listen_func(self, address):
         # type: (str) -> None
-        try:
+        if address in self.on_funcs:
             del self.on_funcs[address]
-        except KeyError:
+        else:
             LOGGER.error(f"There is no listening function for {address}")
