@@ -6,8 +6,9 @@ An asynchronous TCP eventbus Python client other than the thread-based [official
 
 ### Feature
 
-1. Use the event loop from Python 3 for high performance
-2. Provide a command line interface
+1. Use the event loop from Python 3 for high performance 
+2. No dependency
+3. Provide a command line interface
 
 
 ### Install 
