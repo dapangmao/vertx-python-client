@@ -57,9 +57,10 @@ class EventBus:
         reader, writer = await asyncio.open_connection(self.host, self.port)
         try:
             while True:
-                incoming = asyncio.ensure_future(reader.read(sys.maxsize-1))  # asyncio has a bug that does not honor the default parameter -1 # noqa
+                incoming = asyncio.ensure_future(reader.read(sys.maxsize - 1))  # asyncio has a bug that does not honor the default parameter -1 # noqa
                 outgoing = asyncio.ensure_future(self.inputs.get())
-                done, pending = await asyncio.wait([incoming, outgoing, self.stop_sign], return_when=asyncio.FIRST_COMPLETED)  # type: set[asyncio.Future], set[asyncio.Future]  # noqa
+                done, pending = await asyncio.wait([incoming, outgoing, self.stop_sign],
+                                                   return_when=asyncio.FIRST_COMPLETED)  # type: set[asyncio.Future], set[asyncio.Future]  # noqa
                 # Cancel pending tasks to avoid leaking them
                 if incoming in pending:
                     incoming.cancel()
@@ -72,6 +73,9 @@ class EventBus:
                     await writer.drain()
                 if incoming in done:
                     msg = incoming.result()
+                    if msg == b'':
+                        LOGGER.warning("Received disconnection signal from the server")
+                        break
                     LOGGER.debug(f"Client RECV: {msg}")
                     obj = Payload.deserialize(msg)
                     self.listen(obj)
@@ -88,7 +92,7 @@ class EventBus:
             await asyncio.sleep(self.ping_interval_by_seconds)
 
     def send(self, payload):
-        # type: (EventBusPayload) -> None
+        # type: (Payload) -> None
         address = payload.data.get("address")
         if address and payload.data.get('type') == "register" and address not in self.on_funcs:
             self.on_funcs[address] = lambda x: LOGGER.info(f'ADDR: {address} - RECV: {x}')
