@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import json
@@ -25,10 +26,9 @@ class Client:
             self.eb.send(current)
 
     def quit(self):
-        sys.stderr, sys.stdout = None, None
         self.eb.disconnect()
-        time.sleep(2)
-        sys.exit(0)
+        time.sleep(1)
+        os._exit(0)
 
 
 def main():
@@ -36,10 +36,10 @@ def main():
         args = sys.argv[1].split(':')
         host, port = args[0], int(args[1])
     except (IndexError, ValueError):
-        raise ValueError("Please input an argument such as localhost:1234")
+        raise IOError("Please input an argument such as localhost:1234")
+    # Set up the Eventbus client
     cli = Client(host=host, port=port)
     cli.eb.connect()
-
     try:
         while True:
             command = input("> ")

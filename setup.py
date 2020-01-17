@@ -1,5 +1,6 @@
 import os
 from setuptools import setup, find_packages
+from vertx import __version__
 
 pwd = os.path.dirname(__file__)
 with open(os.path.join(pwd, 'README.md')) as f:
@@ -8,7 +9,7 @@ with open(os.path.join(pwd, 'README.md')) as f:
 setup(
     name='vertx-python-client',
     py_modules=['vertx'],
-    version='0.4.1',
+    version=__version__,
     description='An asynchronous TCP eventbus Python client',
     long_description_content_type='text/markdown',
     long_description=readme,
