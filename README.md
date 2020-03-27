@@ -22,7 +22,8 @@ pip install vertx-python-client
 
 1. use as a command line interface
 
-```
+``` 
+# specify an IP and a port
 python -m vertx localhost:1234
 > {"type": "register", "address": "api.versions"}
 > {"type": "publish", "address": "api.versions.get", "replyAddress": "api.versions"}
