@@ -1,6 +1,5 @@
-from vertx.eventbus import EventBus, Payload
+from .eventbus import EventBusPayload, EventBusAsync
 
-__all__ = ["EventBus", "Payload"]
-
+__all__ = ["EventBusPayload", "EventBusAsync"]
 
 __version__ = "0.4.2"

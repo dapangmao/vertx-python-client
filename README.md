@@ -25,16 +25,15 @@ Use as a standard Python library
 ```python
 
 
-from vertx import EventBus, Payload
-
-eb = EventBus(host='localhost', port=1234)
+from vertx import EventBusAsync, EventBusAsync
+eb = EventBusAsync(host='localhost', port=1234)
 eb.connect()
 eb.add_listen_func(address="api.versions", action=lambda x: print(x))
 
-# Send the JSON binary
-reg = Payload(type="register", address="api.versions")
+# Send a JSON payload
+reg = EventBusAsync(type="register", address="api.version")
 eb.send(reg)
-pub = Payload(type="publish", address="api.versions.get", replyAddress="api.versions")
+pub = EventBusAsync(type="publish", address="api.versions.", replyAddress="api.version")
 eb.send(pub)
 
 # Quit the connection
