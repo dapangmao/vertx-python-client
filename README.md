@@ -20,7 +20,18 @@ pip install vertx-python-client
 
 ### Usage 
 
-Use as a standard Python library
+1. use as a command line interface
+
+``` 
+# specify an IP and a port
+python -m vertx localhost:1234
+> {"type": "register", "address": "api.versions"}
+> {"type": "publish", "address": "api.versions.get", "replyAddress": "api.versions"}
+> exit
+
+```
+
+2. use as a standard Python library
 
 ```python
 
@@ -40,15 +51,7 @@ eb.send(pub)
 eb.disconnect()
 ```
 
-Instead use from the command line interface
 
-```
-python -m vertx localhost:1234
-> {"type": "register", "address": "api.versions"}
-> {"type": "publish", "address": "api.versions.get", "replyAddress": "api.versions"}
-> exit
-
-```
 
 
 ### Test
