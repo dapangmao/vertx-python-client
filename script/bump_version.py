@@ -38,16 +38,15 @@ class Bumper:
                 outfile.writelines(l)
         return self
 
-    def bump_readme(self):
+    def bump_init(self):
         res = []
-        with open("README.md", 'r') as infile:
+        with open("vertx/__init__.py", 'r') as infile:
             for l in infile:
-                if 'pip install' in l:
-                    start = l.index("@v")
-                    res.append(l[:start] + f"@v{self.version}\n")
+                if '__version__' in l:
+                    res.append(f'__version__ = "{self.version}"\n')
                 else:
                     res.append(l)
-        with open("README.md", 'w') as outfile:
+        with open("vertx/__init__.py", 'w') as outfile:
             for l in res:
                 outfile.writelines(l)
         return self
@@ -58,20 +57,8 @@ class Bumper:
         print(' '.join(commands))
         return self
 
-    def bump_build_sh(self):
-        res = []
-        with open('build.sh', 'r') as infile:
-            for i, l in enumerate(infile):
-                if i == 0:
-                    res.append(f"export VERSION={self.version}\n")
-                else:
-                    res.append(l)
-        with open("build.sh", 'w') as outfile:
-            for l in res:
-                outfile.writelines(l)
-        return self
 
 
 if __name__ == '__main__':
     arg = sys.argv[1].strip() if len(sys.argv) > 1 else ''
-    Bumper(arg).bump_setup().bump_readme().bump_build_sh().bump_git_tag()
+    Bumper(arg).bump_setup().bump_init().bump_git_tag()

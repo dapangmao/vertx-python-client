@@ -1,13 +1,10 @@
-import asyncio
-import os
 import sys
-import time
-import json
 import logging
 import cmd
 import threading
+import os
 
-from .eventbus import EventBusPayload, EventBusAsync
+from .eventbus import EventBusAsync
 
 LOGGER = logging.getLogger(__name__)
 
@@ -25,7 +22,6 @@ class Client:
 
     def quit(self):
         self.eb.disconnect()
-        self.eb.loop.close()
 
 
 class Shell(cmd.Cmd):
@@ -34,14 +30,13 @@ class Shell(cmd.Cmd):
     client = None
 
     def preloop(self):
-        num_of_args = len(sys.argv)
-        if num_of_args == 2:
-            args = sys.argv[1].split(":")
-        elif num_of_args == 3:
-            args = sys.argv[1:]
+        args = sys.argv
+        if len(args) == 2:
+            args = args.split(":")
+        elif len(args) == 3:
+            args = args[1:]
         else:
-            print(sys.argv)
-            raise IOError("Not correct argument number")
+            raise IOError(f"Not correct argument number: {args}")
         host, port = args[0], int(args[1])
         self.client = Client(host=host, port=port)
         self.client.connect()
@@ -62,6 +57,7 @@ class Shell(cmd.Cmd):
     def do_quit(self, arg: str):
         """Type quit to quit the program"""
         self.client.quit()
+        os._exit(0)
 
     def emptyline(self):
         pass

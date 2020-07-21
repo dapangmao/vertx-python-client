@@ -10,12 +10,12 @@ LOGGER = logging.getLogger(__name__)
 
 class EventBusPayload:
     def __init__(
-        self,
-        type: str = "ping",
-        address: Optional[str] = None,
-        replyAddress: Optional[str] = None,
-        header: Optional[Dict] = None,
-        body: Optional[Dict] = None,
+            self,
+            type: str = "ping",
+            address: Optional[str] = None,
+            replyAddress: Optional[str] = None,
+            header: Optional[Dict] = None,
+            body: Optional[Dict] = None,
     ):
         self.data = dict(
             type=type,
@@ -105,17 +105,17 @@ class EventBusAsync:
     def publish(self, payload: EventBusPayload):
         address: Optional[str] = payload.data.get("address")
         if (
-            address
-            and payload.data.get("type") == "register"
-            and address not in self.on_funcs
+                address
+                and payload.data.get("type") == "register"
+                and address not in self.on_funcs
         ):
             self.on_funcs[address] = lambda x: LOGGER.info(
                 f"ADDR: {address} - RECV: {x}"
             )
         elif (
-            address
-            and payload.data.get("type") == "unregister"
-            and address in self.on_funcs
+                address
+                and payload.data.get("type") == "unregister"
+                and address in self.on_funcs
         ):
             del self.on_funcs[address]
         self.loop.call_soon_threadsafe(self.inputs.put_nowait, payload)
@@ -128,6 +128,7 @@ class EventBusAsync:
         self.loop.call_soon_threadsafe(
             self.stop_sign.set_result, None
         )  # break the event loop
+        self.loop.close()
 
     def _handle_incoming_message(self, dictionary: Dict[str, str]):
         if self.cli_mode:
