@@ -6,13 +6,12 @@ An asynchronous TCP eventbus Python client other than the thread-based [official
 
 ### Feature
 
-1. Use the event loop from Python 3 for high performance 
+1. Asynchronous
 2. No dependency
-3. Provide a command line interface
+3. Provides a command line interface
 
 
 ### Install 
-
 
 ```
 pip install vertx-python-client
@@ -23,20 +22,20 @@ pip install vertx-python-client
 1. use as a command line interface
 
 ``` 
-# specify an IP and a port
-python -m vertx localhost:1234
-> {"type": "register", "address": "api.versions"}
-> {"type": "publish", "address": "api.versions.get", "replyAddress": "api.versions"}
-> exit
+python -m vertx localhost 8080
 
+Welcome to the VertX shell. Type help or ? to list commands.
+Press CTRL+C twice to quit
+
+>> {"type": "register", "address": "app.version"}
+07/21/20 07:48:00 - INFO: {'type': 'pong'}
 ```
 
 2. use as a standard Python library
 
 ```python
-
-
 from vertx import EventBusAsync, EventBusAsync
+
 eb = EventBusAsync(host='localhost', port=1234)
 eb.connect()
 eb.add_listen_func(address="api.versions", action=lambda x: print(x))
@@ -57,5 +56,5 @@ eb.disconnect()
 ### Test
 
 ``` 
-pytest --log-cli-level=DEBUG tests
+pytest tests
 ```

@@ -2,7 +2,7 @@ import sys
 import logging
 import cmd
 import threading
-import os
+from typing import List
 
 from .eventbus import EventBusAsync
 
@@ -14,13 +14,14 @@ class Client:
     def __init__(self, host: str, port: int):
         self.eb = EventBusAsync(host, port)
         self.eb.cli_mode = True
+        self.daemon = threading.Thread(target=self.eb.loop.run_forever)
 
     def connect(self):
         self.eb.connect()
-        daemon = threading.Thread(target=self.eb.loop.run_forever)
-        daemon.start()
+        self.daemon.start()
 
     def quit(self):
+        self.daemon.join()
         self.eb.disconnect()
 
 
@@ -30,14 +31,14 @@ class Shell(cmd.Cmd):
     client = None
 
     def preloop(self):
-        args = sys.argv
+        args: List[str] = sys.argv
         if len(args) == 2:
-            args = args.split(":")
+            arglist = args[1].split(":")
         elif len(args) == 3:
-            args = args[1:]
+            arglist = args[1:]
         else:
-            raise IOError(f"Not correct argument number: {args}")
-        host, port = args[0], int(args[1])
+            raise IOError(f"Not correct argument number: {arglist}")
+        host, port = arglist[0], int(arglist[1])
         self.client = Client(host=host, port=port)
         self.client.connect()
 
@@ -57,7 +58,6 @@ class Shell(cmd.Cmd):
     def do_quit(self, arg: str):
         """Type quit to quit the program"""
         self.client.quit()
-        os._exit(0)
 
     def emptyline(self):
         pass
